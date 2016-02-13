@@ -17,7 +17,7 @@ definition(
     name: "Splunk HTTP Event Logger",
     namespace: "bkeifer",
     author: "Brian Keifer",
-    description: "Log SmartThings events to a Logstash server",
+    description: "Log SmartThings events to a Splunk server",
     category: "Convenience",
     iconUrl: "http://valinor.net/images/logstash-logo-square.png",
     iconX2Url: "http://valinor.net/images/logstash-logo-square.png",
