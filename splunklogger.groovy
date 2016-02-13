@@ -14,10 +14,10 @@
  *
  */
 definition(
-    name: "Logstash Event Logger",
-    namespace: "bkeifer",
-    author: "Brian Keifer",
-    description: "Log SmartThings events to a Logstash server",
+    name: "Logstash Event Logger modified to work with splunk",
+    namespace: "bkeifer modified to work with splunk",
+    author: "Brian Keifer modified by TheFuzz4",
+    description: "Log SmartThings events to a splunk server",
     category: "Convenience",
     iconUrl: "http://valinor.net/images/logstash-logo-square.png",
     iconX2Url: "http://valinor.net/images/logstash-logo-square.png",
