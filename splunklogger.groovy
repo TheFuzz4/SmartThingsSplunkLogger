@@ -14,10 +14,10 @@
  *
  */
 definition(
-    name: "Logstash Event Logger modified to work with splunk",
-    namespace: "bkeifer modified to work with splunk",
-    author: "Brian Keifer modified by TheFuzz4",
-    description: "Log SmartThings events to a splunk server",
+    name: "Splunk HTTP Event Logger",
+    namespace: "bkeifer",
+    author: "Brian Keifer",
+    description: "Log SmartThings events to a Logstash server",
     category: "Convenience",
     iconUrl: "http://valinor.net/images/logstash-logo-square.png",
     iconX2Url: "http://valinor.net/images/logstash-logo-square.png",
@@ -159,9 +159,12 @@ def genericHandler(evt) {
 
     def params = [
         uri: "http://${splunk_host}:${splunk_port}/services/collector/event",
-        headers: "Authorization: Splunk ${splunk_token}",
+        headers: [ 
+            'Authorization': "Splunk ${splunk_token}" 
+            ],
         body: json
     ]
+    log.debug params
     try {
         httpPostJson(params)
     } catch ( groovyx.net.http.HttpResponseException ex ) {
