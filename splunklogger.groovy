@@ -1,5 +1,6 @@
 /**
- *  Event Logger
+ *  Event Logger For Splunk
+ * This was originally created by Brian Keifer I modified it to work with the Splunk HTTP Event Collector
  *
  *  Copyright 2015 Brian Keifer
  *
@@ -15,13 +16,13 @@
  */
 definition(
     name: "Splunk HTTP Event Logger",
-    namespace: "bkeifer",
-    author: "Brian Keifer",
-    description: "Log SmartThings events to a Splunk server",
+    namespace: "thefuzz4",
+    author: "Brian Keifer and Jason Hamilton",
+    description: "Log SmartThings events to a Splunk HTTP Event Collector server",
     category: "Convenience",
-    iconUrl: "http://valinor.net/images/logstash-logo-square.png",
-    iconX2Url: "http://valinor.net/images/logstash-logo-square.png",
-    iconX3Url: "http://valinor.net/images/logstash-logo-square.png")
+    iconUrl: "http://apmblog.dynatrace.com/wp-content/uploads/2014/07/Splunk_thumbnail.png",
+    iconX2Url: "http://apmblog.dynatrace.com/wp-content/uploads/2014/07/Splunk_thumbnail.png",
+    iconX3Url: "http://apmblog.dynatrace.com/wp-content/uploads/2014/07/Splunk_thumbnail.png")
 
 
 preferences {
@@ -135,8 +136,9 @@ def genericHandler(evt) {
     log.debug("source: ${evt.source}")
     log.debug("unit: ${evt.unit}")
     */
-    def json = "{"
-    json += "\"date\":\"${evt.date}\","
+    def json = ""
+    json += "{\"event\":"
+    json += "{\"date\":\"${evt.date}\","
     json += "\"name\":\"${evt.name}\","
     json += "\"displayName\":\"${evt.displayName}\","
     json += "\"device\":\"${evt.device}\","
@@ -153,9 +155,9 @@ def genericHandler(evt) {
     json += "\"location\":\"${evt.location}\","
     json += "\"locationId\":\"${evt.locationId}\","
     json += "\"unit\":\"${evt.unit}\","
-    json += "\"source\":\"${evt.source}\""
+    json += "\"source\":\"${evt.source}\",}"
     json += "}"
-    log.debug("JSON: ${json}")
+    /*log.debug("JSON: ${json}")*/
 
     def params = [
         uri: "http://${splunk_host}:${splunk_port}/services/collector/event",
@@ -164,7 +166,7 @@ def genericHandler(evt) {
             ],
         body: json
     ]
-    log.debug params
+    /*log.debug params*/
     try {
         httpPostJson(params)
     } catch ( groovyx.net.http.HttpResponseException ex ) {
