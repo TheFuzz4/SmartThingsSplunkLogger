@@ -71,6 +71,7 @@ preferences {
 
     section ("Splunk Server") {
         input "splunk_host", "text", title: "Splunk Hostname/IP"
+        input "use_ssl", "boolean", title: "Use SSL?"
         input "splunk_port", "number", title: "Splunk Port"
         input "splunk_token", "text", title: "Splunk Authentication Token"
     }
@@ -159,8 +160,8 @@ def genericHandler(evt) {
     json += "}"
     /*log.debug("JSON: ${json}")*/
 
-    def params = [
-        uri: "http://${splunk_host}:${splunk_port}/services/collector/event",
+   def params = [
+        uri: "${http_protocol}://${splunk_host}:${splunk_port}/services/collector/event",
         headers: [ 
             'Authorization': "Splunk ${splunk_token}" 
             ],
@@ -236,4 +237,13 @@ def accelerationHandler(evt) {
 
 def powerHandler(evt) {
     genericHandler(evt)
+}
+
+def httpProtocol() {
+ if ( use_ssl == "true" ) {
+  http_protocol = 'https'
+}
+else {
+ http_protocol = 'http'
+ }
 }
