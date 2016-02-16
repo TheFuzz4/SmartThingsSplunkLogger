@@ -12,7 +12,8 @@
  *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
  *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
  *  for the specific language governing permissions and limitations under the License.
- *
+ *  
+ *  02-16-2016 Added the ability for non-ssl/SSL
  */
 definition(
     name: "Splunk HTTP Event Logger",
@@ -158,7 +159,21 @@ def genericHandler(evt) {
     json += "\"unit\":\"${evt.unit}\","
     json += "\"source\":\"${evt.source}\",}"
     json += "}"
-    /*log.debug("JSON: ${json}")*/
+    //log.debug("JSON: ${json}")
+    
+  def ssl = use_ssl.toBoolean()
+  def http_protocol
+    //log.debug "Current SSL Value ${use_ssl}"
+    if (ssl == true) {
+      //log.debug "Using SSL"
+      http_protocol = "https"
+    }
+    else {
+     //log.debug "Not Using SSL"
+     http_protocol = "http"
+     }
+     
+     //log.debug http_protocol
 
    def params = [
         uri: "${http_protocol}://${splunk_host}:${splunk_port}/services/collector/event",
@@ -167,7 +182,7 @@ def genericHandler(evt) {
             ],
         body: json
     ]
-    /*log.debug params*/
+    //log.debug params
     try {
         httpPostJson(params)
     } catch ( groovyx.net.http.HttpResponseException ex ) {
@@ -239,11 +254,4 @@ def powerHandler(evt) {
     genericHandler(evt)
 }
 
-def httpProtocol() {
- if ( use_ssl == "true" ) {
-  http_protocol = 'https'
-}
-else {
- http_protocol = 'http'
- }
-}
+
