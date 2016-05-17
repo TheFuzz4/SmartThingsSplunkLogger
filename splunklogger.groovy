@@ -69,12 +69,34 @@ preferences {
     section("Log these energy meters:") {
         input "energymeters", "capability.energyMeter", multiple: true, required: false
     }
+    section("Log these music players:") {
+        input "musicplayer", "capability.musicPlayer", multiple: true, required: false
+    }
+    section("Log these power meters:") {
+        input "powermeters", "capability.powerMeter", multiple: true, required: false
+    }
+    section("Log these illuminance sensors:") {
+        input "illuminances", "capability.illuminanceMeasurement", multiple: true, required: false
+    }
+     section("Log these batteries:") {
+        input "batteries", "capability.battery", multiple: true, required: false
+    }
+    section("Log these buttons:") {
+        input "button", "capability.button", multiple: true, required: false
+    }
+    section("Log these voltages:") {
+        input "voltage", "capability.voltageMeasurement", multiple: true, required: false
+    }
+    section("Log these locks:") {
+        input "lock", "capability.lock", multiple: true, required: false
+    }
 
     section ("Splunk Server") {
-        input "splunk_host", "text", title: "Splunk Hostname/IP"
-        input "use_ssl", "boolean", title: "Use SSL?"
-        input "splunk_port", "number", title: "Splunk Port"
-        input "splunk_token", "text", title: "Splunk Authentication Token"
+        input "use_local", "boolean", title: "Local Server?", required: true
+        input "splunk_host", "text", title: "Splunk Hostname/IP", required: true
+        input "use_ssl", "boolean", title: "Use SSL?", required: true
+        input "splunk_port", "number", title: "Splunk Port", required: true
+        input "splunk_token", "text", title: "Splunk Authentication Token", required: true
     }
 
 }
@@ -113,8 +135,17 @@ def doSubscriptions() {
 	subscribe(waterdetectors,	"water",					waterHandler)
     subscribe(location,			"location",					locationHandler)
     subscribe(accelerations,    "acceleration",             accelerationHandler)
-    subscribe(energymeters,     "power",                    powerHandler)
+    subscribe(energymeters,     "energy",                   energyHandler)
+    subscribe(musicplayers,     "music",                    musicHandler)
+    subscribe(illuminaces,		"illuminance",				illuminanceHandler)
+    subscribe(powermeters,		"power",					powerHandler)
+    subscribe(batteries,		"battery",                  batteryHandler)
+    subscribe(button,           "button",                   buttonHandler)
+    subscribe(voltageMeasurement, "voltage",                voltageHandler)
+    subscribe(lock,              "lock",                    lockHandler)
+
 }
+
 
 def genericHandler(evt) {
     /*
@@ -162,7 +193,26 @@ def genericHandler(evt) {
     //log.debug("JSON: ${json}")
     
   def ssl = use_ssl.toBoolean()
+  def local = use_local.toBoolean()
   def http_protocol
+  def splunk_server = "${splunk_host}:${splunk_port}"
+  
+  //log.debug "Using Local"
+  if (local == true) {
+  sendHubCommand(new physicalgraph.device.HubAction([
+  method: "POST",
+  path: "/services/collector/event",
+  headers: [
+  HOST: "${splunk_server}",
+  'Authorization': "Splunk ${splunk_token}",
+  "Content-Type":"application/json"
+  ],
+  body:json
+  ]))
+  
+  }
+  else {
+    //log.debug "Use Remote"
     //log.debug "Current SSL Value ${use_ssl}"
     if (ssl == true) {
       //log.debug "Using SSL"
@@ -173,8 +223,6 @@ def genericHandler(evt) {
      http_protocol = "http"
      }
      
-     //log.debug http_protocol
-
    def params = [
         uri: "${http_protocol}://${splunk_host}:${splunk_port}/services/collector/event",
         headers: [ 
@@ -188,7 +236,9 @@ def genericHandler(evt) {
     } catch ( groovyx.net.http.HttpResponseException ex ) {
        	log.debug "Unexpected response error: ${ex.statusCode}"
     }
-}
+  }
+  }
+
 
 def alarmHandler(evt) {
 	genericHandler(evt)
@@ -250,8 +300,33 @@ def accelerationHandler(evt) {
 	genericHandler(evt)
 }
 
+def energyHandler(evt) {
+    genericHandler(evt)
+}
+
+def musicHandler(evt) {
+    genericHandler(evt)
+}
+def illuminanceHandler(evt) {
+    genericHandler(evt)
+}
+
 def powerHandler(evt) {
     genericHandler(evt)
 }
 
+def batteryHandler(evt) {
+    genericHandlers(evt)
+}
 
+def buttonHandler(evt) {
+    genericHandlers(evt)
+}
+
+def voltageHandler(evt) {
+    genericHandlers(evt)
+}
+
+def lockHandler(evt) {
+    genericHandlers(evt)
+}
