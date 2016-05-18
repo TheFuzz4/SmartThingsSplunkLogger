@@ -14,6 +14,8 @@
  *  for the specific language governing permissions and limitations under the License.
  *  
  *  02-16-2016 Added the ability for non-ssl/SSL
+ *  05-18-2016 Added the ability to log to splunk over the lan and 
+ *  used adrabkin code fix for the length with local logging
  */
 definition(
     name: "Splunk HTTP Event Logger",
@@ -196,16 +198,18 @@ def genericHandler(evt) {
   def local = use_local.toBoolean()
   def http_protocol
   def splunk_server = "${splunk_host}:${splunk_port}"
+def length = json.getBytes().size().toString()
   
-  //log.debug "Using Local"
   if (local == true) {
   sendHubCommand(new physicalgraph.device.HubAction([
   method: "POST",
   path: "/services/collector/event",
   headers: [
-  HOST: "${splunk_server}",
   'Authorization': "Splunk ${splunk_token}",
+  "Content-Length":"${length}",
+  HOST: "${splunk_server}",
   "Content-Type":"application/json"
+  "Accept-Encoding":"gzip,deflate"
   ],
   body:json
   ]))
