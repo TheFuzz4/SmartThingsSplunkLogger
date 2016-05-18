@@ -208,7 +208,7 @@ def length = json.getBytes().size().toString()
   'Authorization': "Splunk ${splunk_token}",
   "Content-Length":"${length}",
   HOST: "${splunk_server}",
-  "Content-Type":"application/json"
+  "Content-Type":"application/json",
   "Accept-Encoding":"gzip,deflate"
   ],
   body:json
