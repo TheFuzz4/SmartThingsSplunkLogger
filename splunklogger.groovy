@@ -329,18 +329,18 @@ def powerHandler(evt) {
 }
 
 def batteryHandler(evt) {
-    genericHandlers(evt)
+    genericHandler(evt)
 }
 
 def buttonHandler(evt) {
-    genericHandlers(evt)
+    genericHandler(evt)
 }
 
 def voltageHandler(evt) {
-    genericHandlers(evt)
+    genericHandler(evt)
 }
 
 def lockHandler(evt) {
-    genericHandlers(evt)
+    genericHandler(evt)
 }
 
