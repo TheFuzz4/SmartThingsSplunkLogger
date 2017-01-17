@@ -13,6 +13,7 @@
 * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
 * for the specific language governing permissions and limitations under the License.
 *
+* 01-17-2016 Merged code from rlyons20 to splunk lock devices
 * 12-04-2016 Fixed the results so that they not only spit out the results but they still also send it off to splunk like it should
 * 02-16-2016 Added the ability for non-ssl/SSL
 * 05-18-2016 Added the ability to log to splunk over the lan and 
