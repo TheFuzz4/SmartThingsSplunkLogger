@@ -30,14 +30,23 @@ definition(
 
 
 preferences {
-    section("Log these presence sensors:") {
-        input "presences", "capability.presenceSensor", multiple: true, required: false
+    section("Log these locks:") {
+        input "lockDevice", "capability.lock", multiple: true, required: false
+    }
+    section("Log these contact sensors:") {
+    	input "contacts", "capability.contactSensor", multiple: true, required: false
     }
  	section("Log these switches:") {
     	input "switches", "capability.switch", multiple: true, required: false
     }
  	section("Log these switch levels:") {
     	input "levels", "capability.switchLevel", multiple: true, required: false
+    }
+     section("Log these batteries:") {
+        input "batteries", "capability.battery", multiple: true, required: false
+    }
+    section("Log these presence sensors:") {
+        input "presences", "capability.presenceSensor", multiple: true, required: false
     }
 	section("Log these motion sensors:") {
     	input "motions", "capability.motionSensor", multiple: true, required: false
@@ -48,8 +57,8 @@ preferences {
     section("Log these humidity sensors:") {
     	input "humidities", "capability.relativeHumidityMeasurement", multiple: true, required: false
     }
-    section("Log these contact sensors:") {
-    	input "contacts", "capability.contactSensor", multiple: true, required: false
+    section("Log these buttons:") {
+        input "button", "capability.button", multiple: true, required: false
     }
     section("Log these alarms:") {
 		input "alarms", "capability.alarm", multiple: true, required: false
@@ -81,17 +90,8 @@ preferences {
     section("Log these illuminance sensors:") {
         input "illuminances", "capability.illuminanceMeasurement", multiple: true, required: false
     }
-     section("Log these batteries:") {
-        input "batteries", "capability.battery", multiple: true, required: false
-    }
-    section("Log these buttons:") {
-        input "button", "capability.button", multiple: true, required: false
-    }
     section("Log these voltages:") {
         input "voltage", "capability.voltageMeasurement", multiple: true, required: false
-    }
-    section("Log these locks:") {
-        input "lockDevice", "capability.lock", multiple: true, required: false
     }
 
     section ("Splunk Server") {
@@ -195,7 +195,7 @@ def genericHandler(evt) {
     json += "\"unit\":\"${evt.unit}\","
     json += "\"source\":\"${evt.source}\",}"
     json += "}"
-    log.debug("JSON: ${json}")
+    //log.debug("JSON: ${json}")
     
   def ssl = use_ssl.toBoolean()
   def local = use_local.toBoolean()
@@ -331,7 +331,83 @@ def powerHandler(evt) {
 }
 
 def batteryHandler(evt) {
-    genericHandler(evt)
+log.trace "$evt"
+def json = ""
+json += "{\"event\":"
+json += "{\"date\":\"${evt.date}\","
+json += "\"name\":\"${evt.name}\","
+json += "\"displayName\":\"${evt.displayName}\","
+json += "\"device\":\"${evt.device}\","
+json += "\"deviceId\":\"${evt.deviceId}\","
+json += "\"value\":\"${evt.value}\","
+json += "\"isStateChange\":\"${evt.isStateChange()}\","
+json += "\"id\":\"${evt.id}\","
+json += "\"description\":\"${evt.description}\","
+json += "\"descriptionText\":\"${evt.descriptionText}\","
+json += "\"installedSmartAppId\":\"${evt.installedSmartAppId}\","
+json += "\"isoDate\":\"${evt.isoDate}\","
+json += "\"isDigital\":\"${evt.isDigital()}\","
+json += "\"isPhysical\":\"${evt.isPhysical()}\","
+json += "\"location\":\"${evt.location}\","
+json += "\"locationId\":\"${evt.locationId}\","
+json += "\"unit\":\"${evt.unit}\","
+json += "\"source\":\"${evt.source}\",}"
+json += "}"
+//log.debug("JSON: ${json}")
+
+def ssl = use_ssl.toBoolean()
+def local = use_local.toBoolean()
+def http_protocol
+def splunk_server = "${splunk_host}:${splunk_port}"
+def length = json.getBytes().size().toString()
+def msg = parseLanMessage(description)
+def body = msg.body
+def status = msg.status
+
+if (local == true) {
+//sendHubCommand(new physicalgraph.device.HubAction([
+def result = (new physicalgraph.device.HubAction([
+method: "POST",
+path: "/services/collector/event",
+headers: [
+'Authorization': "Splunk ${splunk_token}",
+"Content-Length":"${length}",
+HOST: "${splunk_server}",
+"Content-Type":"application/json",
+"Accept-Encoding":"gzip,deflate"
+],
+body:json
+]))
+log.debug result
+sendHubCommand(result);
+return result
+}
+else {
+//log.debug "Use Remote"
+//log.debug "Current SSL Value ${use_ssl}"
+if (ssl == true) {
+//log.debug "Using SSL"
+http_protocol = "https"
+}
+else {
+//log.debug "Not Using SSL"
+http_protocol = "http"
+}
+
+def params = [
+uri: "${http_protocol}://${splunk_host}:${splunk_port}/services/collector/event",
+headers: [ 
+'Authorization': "Splunk ${splunk_token}" 
+],
+body: json
+]
+log.debug params
+try {
+httpPostJson(params)
+} catch ( groovyx.net.http.HttpResponseException ex ) {
+log.debug "Unexpected response error: ${ex.statusCode}"
+}
+}
 }
 
 def buttonHandler(evt) {
@@ -343,5 +419,81 @@ def voltageHandler(evt) {
 }
 
 def lockHandler(evt) {
-    genericHandlers(evt)
+log.trace "$evt"
+def json = ""
+json += "{\"event\":"
+json += "{\"date\":\"${evt.date}\","
+json += "\"name\":\"${evt.name}\","
+json += "\"displayName\":\"${evt.displayName}\","
+json += "\"device\":\"${evt.device}\","
+json += "\"deviceId\":\"${evt.deviceId}\","
+json += "\"value\":\"${evt.value}\","
+json += "\"isStateChange\":\"${evt.isStateChange()}\","
+json += "\"id\":\"${evt.id}\","
+json += "\"description\":\"${evt.description}\","
+json += "\"descriptionText\":\"${evt.descriptionText}\","
+json += "\"installedSmartAppId\":\"${evt.installedSmartAppId}\","
+json += "\"isoDate\":\"${evt.isoDate}\","
+json += "\"isDigital\":\"${evt.isDigital()}\","
+json += "\"isPhysical\":\"${evt.isPhysical()}\","
+json += "\"location\":\"${evt.location}\","
+json += "\"locationId\":\"${evt.locationId}\","
+json += "\"unit\":\"${evt.unit}\","
+json += "\"source\":\"${evt.source}\",}"
+json += "}"
+//log.debug("JSON: ${json}")
+
+def ssl = use_ssl.toBoolean()
+def local = use_local.toBoolean()
+def http_protocol
+def splunk_server = "${splunk_host}:${splunk_port}"
+def length = json.getBytes().size().toString()
+def msg = parseLanMessage(description)
+def body = msg.body
+def status = msg.status
+
+if (local == true) {
+//sendHubCommand(new physicalgraph.device.HubAction([
+def result = (new physicalgraph.device.HubAction([
+method: "POST",
+path: "/services/collector/event",
+headers: [
+'Authorization': "Splunk ${splunk_token}",
+"Content-Length":"${length}",
+HOST: "${splunk_server}",
+"Content-Type":"application/json",
+"Accept-Encoding":"gzip,deflate"
+],
+body:json
+]))
+log.debug result
+sendHubCommand(result);
+return result
+}
+else {
+//log.debug "Use Remote"
+//log.debug "Current SSL Value ${use_ssl}"
+if (ssl == true) {
+//log.debug "Using SSL"
+http_protocol = "https"
+}
+else {
+//log.debug "Not Using SSL"
+http_protocol = "http"
+}
+
+def params = [
+uri: "${http_protocol}://${splunk_host}:${splunk_port}/services/collector/event",
+headers: [ 
+'Authorization': "Splunk ${splunk_token}" 
+],
+body: json
+]
+log.debug params
+try {
+httpPostJson(params)
+} catch ( groovyx.net.http.HttpResponseException ex ) {
+log.debug "Unexpected response error: ${ex.statusCode}"
+}
+}
 }
