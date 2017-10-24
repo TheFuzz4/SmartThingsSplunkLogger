@@ -145,6 +145,7 @@ subscribe(batteries,	"battery", batteryHandler)
 subscribe(button, "button", buttonHandler)
 subscribe(voltageMeasurement, "voltage", voltageHandler)
 subscribe(lockDevice, "lock", lockHandler)
+subscribe(humidities, "humidity", humidityHandler)
 }
 
 def genericHandler(evt) {
@@ -319,6 +320,10 @@ genericHandler(evt)
 }
 
 def powerHandler(evt) {
+genericHandler(evt)
+}
+
+def humidityHandler(evt) {
 genericHandler(evt)
 }
 
