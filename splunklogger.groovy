@@ -17,6 +17,7 @@
 * 12-04-2016 Fixed the results so that they not only spit out the results but they still also send it off to splunk like it should
 * 02-16-2016 Added the ability for non-ssl/SSL
 * 05-18-2016 Added the ability to log to splunk over the lan and 
+* 10-24-2017 Added the code from Uto to log humidity readings
 * used adrabkin code fix for the length with local logging
 */
 definition(
