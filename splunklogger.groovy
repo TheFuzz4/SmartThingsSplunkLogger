@@ -80,7 +80,7 @@ section("Log these power meters:") {
 input "powermeters", "capability.powerMeter", multiple: true, required: false
 }
 section("Log these illuminance sensors:") {
-input "illuminances", "capability.illuminanceMeasurement", multiple: true, required: false
+input "illuminance", "capability.illuminanceMeasurement", multiple: true, required: false
 }
 section("Log these batteries:") {
 input "batteries", "capability.battery", multiple: true, required: false
