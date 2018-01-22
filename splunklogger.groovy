@@ -80,7 +80,7 @@ section("Log these power meters:") {
 input "powermeters", "capability.powerMeter", multiple: true, required: false
 }
 section("Log these illuminance sensors:") {
-input "illuminance", "capability.illuminanceMeasurement", multiple: true, required: false
+input "illuminances", "capability.illuminanceMeasurement", multiple: true, required: false
 }
 section("Log these batteries:") {
 input "batteries", "capability.battery", multiple: true, required: false
@@ -140,7 +140,7 @@ subscribe(location,	"location",	locationHandler)
 subscribe(accelerations, "acceleration", accelerationHandler)
 subscribe(energymeters, "energy", energyHandler)
 subscribe(musicplayers, "music", musicHandler)
-subscribe(illuminaces,	"illuminance",	illuminanceHandler)
+subscribe(lightSensor,	"illuminance",	illuminanceHandler)
 subscribe(powermeters,	"power",	powerHandler)
 subscribe(batteries,	"battery", batteryHandler)
 subscribe(button, "button", buttonHandler)
@@ -329,83 +329,7 @@ genericHandler(evt)
 }
 
 def batteryHandler(evt) {
-log.trace "$evt"
-def json = ""
-json += "{\"event\":"
-json += "{\"date\":\"${evt.date}\","
-json += "\"name\":\"${evt.name}\","
-json += "\"displayName\":\"${evt.displayName}\","
-json += "\"device\":\"${evt.device}\","
-json += "\"deviceId\":\"${evt.deviceId}\","
-json += "\"value\":\"${evt.value}\","
-json += "\"isStateChange\":\"${evt.isStateChange()}\","
-json += "\"id\":\"${evt.id}\","
-json += "\"description\":\"${evt.description}\","
-json += "\"descriptionText\":\"${evt.descriptionText}\","
-json += "\"installedSmartAppId\":\"${evt.installedSmartAppId}\","
-json += "\"isoDate\":\"${evt.isoDate}\","
-json += "\"isDigital\":\"${evt.isDigital()}\","
-json += "\"isPhysical\":\"${evt.isPhysical()}\","
-json += "\"location\":\"${evt.location}\","
-json += "\"locationId\":\"${evt.locationId}\","
-json += "\"unit\":\"${evt.unit}\","
-json += "\"source\":\"${evt.source}\",}"
-json += "}"
-//log.debug("JSON: ${json}")
-
-def ssl = use_ssl.toBoolean()
-def local = use_local.toBoolean()
-def http_protocol
-def splunk_server = "${splunk_host}:${splunk_port}"
-def length = json.getBytes().size().toString()
-def msg = parseLanMessage(description)
-def body = msg.body
-def status = msg.status
-
-if (local == true) {
-//sendHubCommand(new physicalgraph.device.HubAction([
-def result = (new physicalgraph.device.HubAction([
-method: "POST",
-path: "/services/collector/event",
-headers: [
-'Authorization': "Splunk ${splunk_token}",
-"Content-Length":"${length}",
-HOST: "${splunk_server}",
-"Content-Type":"application/json",
-"Accept-Encoding":"gzip,deflate"
-],
-body:json
-]))
-log.debug result
-sendHubCommand(result);
-return result
-}
-else {
-//log.debug "Use Remote"
-//log.debug "Current SSL Value ${use_ssl}"
-if (ssl == true) {
-//log.debug "Using SSL"
-http_protocol = "https"
-}
-else {
-//log.debug "Not Using SSL"
-http_protocol = "http"
-}
-
-def params = [
-uri: "${http_protocol}://${splunk_host}:${splunk_port}/services/collector/event",
-headers: [ 
-'Authorization': "Splunk ${splunk_token}" 
-],
-body: json
-]
-log.debug params
-try {
-httpPostJson(params)
-} catch ( groovyx.net.http.HttpResponseException ex ) {
-log.debug "Unexpected response error: ${ex.statusCode}"
-}
-}
+genericHandler(evt)
 }
 
 def buttonHandler(evt) {
@@ -417,81 +341,5 @@ genericHandler(evt)
 }
 
 def lockHandler(evt) {
-log.trace "$evt"
-def json = ""
-json += "{\"event\":"
-json += "{\"date\":\"${evt.date}\","
-json += "\"name\":\"${evt.name}\","
-json += "\"displayName\":\"${evt.displayName}\","
-json += "\"device\":\"${evt.device}\","
-json += "\"deviceId\":\"${evt.deviceId}\","
-json += "\"value\":\"${evt.value}\","
-json += "\"isStateChange\":\"${evt.isStateChange()}\","
-json += "\"id\":\"${evt.id}\","
-json += "\"description\":\"${evt.description}\","
-json += "\"descriptionText\":\"${evt.descriptionText}\","
-json += "\"installedSmartAppId\":\"${evt.installedSmartAppId}\","
-json += "\"isoDate\":\"${evt.isoDate}\","
-json += "\"isDigital\":\"${evt.isDigital()}\","
-json += "\"isPhysical\":\"${evt.isPhysical()}\","
-json += "\"location\":\"${evt.location}\","
-json += "\"locationId\":\"${evt.locationId}\","
-json += "\"unit\":\"${evt.unit}\","
-json += "\"source\":\"${evt.source}\",}"
-json += "}"
-//log.debug("JSON: ${json}")
-
-def ssl = use_ssl.toBoolean()
-def local = use_local.toBoolean()
-def http_protocol
-def splunk_server = "${splunk_host}:${splunk_port}"
-def length = json.getBytes().size().toString()
-def msg = parseLanMessage(description)
-def body = msg.body
-def status = msg.status
-
-if (local == true) {
-//sendHubCommand(new physicalgraph.device.HubAction([
-def result = (new physicalgraph.device.HubAction([
-method: "POST",
-path: "/services/collector/event",
-headers: [
-'Authorization': "Splunk ${splunk_token}",
-"Content-Length":"${length}",
-HOST: "${splunk_server}",
-"Content-Type":"application/json",
-"Accept-Encoding":"gzip,deflate"
-],
-body:json
-]))
-log.debug result
-sendHubCommand(result);
-return result
-}
-else {
-//log.debug "Use Remote"
-//log.debug "Current SSL Value ${use_ssl}"
-if (ssl == true) {
-//log.debug "Using SSL"
-http_protocol = "https"
-}
-else {
-//log.debug "Not Using SSL"
-http_protocol = "http"
-}
-
-def params = [
-uri: "${http_protocol}://${splunk_host}:${splunk_port}/services/collector/event",
-headers: [ 
-'Authorization': "Splunk ${splunk_token}" 
-],
-body: json
-]
-log.debug params
-try {
-httpPostJson(params)
-} catch ( groovyx.net.http.HttpResponseException ex ) {
-log.debug "Unexpected response error: ${ex.statusCode}"
-}
-}
+genericHandler(evt)
 }
