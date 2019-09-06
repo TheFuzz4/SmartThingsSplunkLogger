@@ -191,7 +191,7 @@ json += "\"isPhysical\":\"${evt.isPhysical()}\","
 json += "\"location\":\"${evt.location}\","
 json += "\"locationId\":\"${evt.locationId}\","
 json += "\"unit\":\"${evt.unit}\","
-json += "\"source\":\"${evt.source}\",}"
+json += "\"source\":\"${evt.source}\"}"
 json += "}"
 //log.debug("JSON: ${json}")
 def ssl = use_ssl.toBoolean()
