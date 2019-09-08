@@ -23,7 +23,7 @@ definition(
     namespace: "halr9000",
     author: "Brian Keifer, Jason Hamilton, Hal Rottenberg",
     description: "Log SmartThings events to a Splunk HTTP Event Collector server",
-    category: "Analytics",
+    category: "Convenience",
     iconUrl: "https://cdn.apps.splunk.com/media/public/icons/cdb1e1dc-5a0e-11e4-84b5-0af1e3fac1ba.png",
     iconX2Url: "https://cdn.apps.splunk.com/media/public/icons/cdb1e1dc-5a0e-11e4-84b5-0af1e3fac1ba.png",
     iconX3Url: "https://cdn.apps.splunk.com/media/public/icons/cdb1e1dc-5a0e-11e4-84b5-0af1e3fac1ba.png")
