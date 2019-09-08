@@ -189,6 +189,7 @@ def genericHandler(evt) {
             headers: [
                 'Authorization': "Splunk ${splunk_token}",
                 "Content-Length":"${length}",
+                HOST: "${splunk_server}",
                 "Content-Type":"application/json",
                 "Accept-Encoding":"gzip,deflate"
             ],
