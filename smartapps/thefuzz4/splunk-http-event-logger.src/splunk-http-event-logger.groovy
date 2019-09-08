@@ -168,8 +168,8 @@ def genericHandler(evt) {
     json += "\"location\":\"${evt.location}\","
     json += "\"locationId\":\"${evt.locationId}\","
     json += "\"unit\":\"${evt.unit}\","
-    json += "\"source\":\"${evt.source}\",}"
-    json += "\"sourcetype\":\"http:smartthings\",}"
+    json += "\"stSource\":\"${evt.source}\","
+    json += "\"sourcetype\":\"smartthings\"}"
     json += "}"
     //log.debug("JSON: ${json}")
     def ssl = use_ssl.toBoolean()
