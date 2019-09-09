@@ -92,6 +92,10 @@ preferences {
     section("Log these locks:") {
         input "lockDevice", "capability.lock", multiple: true, required: false
     }
+    section("Scheduled Device Polling") {
+        input "do_device_poll", "boolean", title: "Poll devices every 5 mins?", required: true
+    }
+
     section ("Splunk Server") {
         input "use_local", "boolean", title: "Local Server?", required: true
         input "splunk_host", "text", title: "Splunk Hostname/IP", required: true
@@ -114,7 +118,44 @@ def updated() {
 
 def initialize() {
     doSubscriptions()
+    if(do_device_poll) {
+        runEvery5Minutes(reportStates)
+    }
 }
+
+// enumerates all devices, converts to JSON output and adds to an array to send to splunk
+def reportStates {
+    def detailList = []
+    alarms.each { detailList.add(deviceToJSON(it)) }
+    codetectors.each { detailList.add(deviceToJSON(it)) }
+    contacts.each { detailList.add(deviceToJSON(it)) }
+    indicators.each { detailList.add(deviceToJSON(it)) }
+    modes.each { detailList.add(deviceToJSON(it)) }
+    motions.each { detailList.add(deviceToJSON(it)) }
+    presences.each { detailList.add(deviceToJSON(it)) }
+    relays.each { detailList.add(deviceToJSON(it)) }
+    smokedetectors.each { detailList.add(deviceToJSON(it)) }
+    switches.each { detailList.add(deviceToJSON(it)) }
+    levels.each { detailList.add(deviceToJSON(it)) }
+    temperatures.each { detailList.add(deviceToJSON(it)) }
+    waterdetectors.each { detailList.add(deviceToJSON(it)) }
+    locations.each { detailList.add(deviceToJSON(it)) }
+    accelerations.each { detailList.add(deviceToJSON(it)) }
+    energymeters.each { detailList.add(deviceToJSON(it)) }
+    musicplayers.each { detailList.add(deviceToJSON(it)) }
+    lightsensors.each { detailList.add(deviceToJSON(it)) }
+    powermeters.each { detailList.add(deviceToJSON(it)) }
+    batteries.each { detailList.add(deviceToJSON(it)) }
+    buttons.each { detailList.add(deviceToJSON(it)) }
+    voltagemeasurements.each { detailList.add(deviceToJSON(it)) }
+    lockdevices.each { detailList.add(deviceToJSON(it)) }
+    humidities.each { detailList.add(deviceToJSON(it)) }
+    
+    detailList.unique()
+    detailList.each { logToSplunkHEC it }
+    
+}
+
 
 // Subscribes to the various Events for a device or Location. The specified handlerMethod will be called when the Event is fired.
 // subscribe specification: https://docs.smartthings.com/en/latest/ref-docs/smartapp-ref.html#subscribe
@@ -132,23 +173,53 @@ def doSubscriptions() {
     subscribe(levels,"level",levelHandler)
     subscribe(temperatures,"temperature", temperatureHandler)
     subscribe(waterdetectors,"water",waterHandler)
-    subscribe(location,"location",locationHandler)
+    subscribe(locations,"location",locationHandler)
     subscribe(accelerations, "acceleration", accelerationHandler)
     subscribe(energymeters, "energy", energyHandler)
     subscribe(musicplayers, "music", musicHandler)
-    subscribe(lightSensor,"illuminance",illuminanceHandler)
+    subscribe(lightsensors,"illuminance",illuminanceHandler)
     subscribe(powermeters,"power",powerHandler)
     subscribe(batteries,"battery", batteryHandler)
-    subscribe(button, "button", buttonHandler)
-    subscribe(voltageMeasurement, "voltage", voltageHandler)
-    subscribe(lockDevice, "lock", lockHandler)
+    subscribe(buttons, "button", buttonHandler)
+    subscribe(voltagemeasurements, "voltage", voltageHandler)
+    subscribe(lockdevices, "lock", lockHandler)
     subscribe(humidities, "humidity", humidityHandler)
 }
 
-// Build JSON object and write it to Splunk HEC
-// event specification: https://docs.smartthings.com/en/latest/ref-docs/event-ref.html
-def genericHandler(evt) {
 
+
+// convert any device into a json output
+def deviceToJSON(device) {
+    def theDevice = device
+    def deviceCapabilities = theDevice.capabilities
+    def eventString = ""
+    eventString += "{\"event\":{\"eventType\":\"scheduledPoll\",\"sourcetype\":\"smartthings\", \"deviceName\":\"${theDevice.label}\", \"deviceId\":\"${theDevice.id}\",\"capabilities\":{"
+    deviceCapabilities.each { cap ->
+        eventString = eventString + "\"${cap.name}\":{"
+        cap.attributes.each { attr ->
+            def currentValue = theDevice.currentValue(attr.name)
+            eventString = eventString + "\"${attr.name}\":\"${currentValue}\","
+        }
+        if(eventString[-1] == ",") {
+            eventString = eventString.substring(0,eventString.length()-1) + "},"
+        } else {
+            eventString = eventString + "},"
+        }
+    }
+    if(eventString[-1] == ",") {
+        eventString = eventString.substring(0,eventString.length()-1) + "}"
+    } else {
+        eventString = eventString + "}"
+    }
+
+    eventString = eventString + "}}"
+    return eventString
+
+}
+
+
+// converts smartthings events to json
+def eventToJSON(evt) {
     def json = ""
     json += "{\"event\":"
     json += "{\"date\":\"${evt.date}\","
@@ -171,6 +242,13 @@ def genericHandler(evt) {
     json += "\"stSource\":\"${evt.source}\","
     json += "\"sourcetype\":\"smartthings\"}"
     json += "}"
+
+    return json
+}
+
+
+// assumes well-formed HEC json, sends to HEC endpoint item by item
+def logToSplunkHEC(json) {
     //log.debug("JSON: ${json}")
     def ssl = use_ssl.toBoolean()
     def local = use_local.toBoolean()
@@ -226,6 +304,14 @@ def genericHandler(evt) {
             log.debug "Unexpected response error: ${ex.statusCode}"
         }
     }
+
+}
+
+// Build JSON object and write it to Splunk HEC
+// event specification: https://docs.smartthings.com/en/latest/ref-docs/event-ref.html
+// logToSplunkHEC is used for both events and scheduled device polling
+def genericHandler(evt) {
+    logToSplunkHEC(eventToJSON(evt))
 }
 
 // Today all of the subscriptions use the generic handler, but could be customized if needed
