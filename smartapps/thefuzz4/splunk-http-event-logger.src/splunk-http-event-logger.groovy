@@ -17,6 +17,7 @@
 * 10-24-2017 Added the code from Uto to log humidity readings and spelling fixes
 *   used adrabkin code fix for the length with local logging
 * 08-07-2019 Reformatting, removed HOST header from HTTP payload. See full changelog at https://github.com/halr9000/SmartThingsSplunkLogger
+* 09-09-2019 Refactored variables for consistency.  Moved JSON conversion out of the logging subroutine.  Added device polling option.
 */
 definition(
     name: "Splunk HTTP Event Logger",
@@ -28,6 +29,8 @@ definition(
     iconX2Url: "https://cdn.apps.splunk.com/media/public/icons/cdb1e1dc-5a0e-11e4-84b5-0af1e3fac1ba.png",
     iconX3Url: "https://cdn.apps.splunk.com/media/public/icons/cdb1e1dc-5a0e-11e4-84b5-0af1e3fac1ba.png")
 
+
+// TODO - more granular ability to poll only specific device or devicetypes
 preferences {
     section("Log these presence sensors:") {
         input "presences", "capability.presenceSensor", multiple: true, required: false
@@ -247,7 +250,7 @@ def eventToJSON(evt) {
 }
 
 
-// assumes well-formed HEC json, sends to HEC endpoint item by item
+// assumes well-formed HEC json, sends to HEC endpoint via POST each call.
 def logToSplunkHEC(json) {
     //log.debug("JSON: ${json}")
     def ssl = use_ssl.toBoolean()
